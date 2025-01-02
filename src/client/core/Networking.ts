@@ -1,7 +1,8 @@
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { Player } from './Player.ts';
 import { ChatOverlay } from '../ui/ChatOverlay.ts';
 import * as THREE from 'three';
+import { CustomClientSocket } from "../../messages.ts";
 
 export interface RemotePlayer {
     idLastDamagedBy: number;
@@ -45,7 +46,7 @@ interface LastUploadedLocalPlayer {
 }
 
 export class Networking {
-    private socket: Socket;
+    private socket: CustomClientSocket;
     private gameVersion: string = '';
     private remotePlayers: RemotePlayer[] = [];
     private worldItems: WorldItem[] = [];
@@ -104,21 +105,21 @@ export class Networking {
             this.lastLatencyTestGotResponse = true;
         });
 
-        this.socket.on('remotePlayerData', (data: RemotePlayer[]) => {
+        this.socket.on('remotePlayerData', (data) => {
             this.remotePlayers = data;
             this.processRemotePlayerData();
         });
 
-        this.socket.on('worldItemData', (data: WorldItem[]) => {
+        this.socket.on('worldItemData', (data) => {
             this.worldItems = data;
             this.processWorldItemData();
         });
 
-        this.socket.on('chatMsg', (data: { id: number, name: string, message: string }) => {
+        this.socket.on('chatMsg', (data) => {
             if (data.id !== this.localPlayer.id) this.chatOverlay.addChatMessage(data);
         });
 
-        this.socket.on('serverInfo', (data: ServerInfo) => {
+        this.socket.on('serverInfo', (data) => {
             this.serverInfo = data;
             this.onServerInfo();
         });
